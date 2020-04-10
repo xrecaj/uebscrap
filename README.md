@@ -28,6 +28,23 @@ Per realitzar la cerca de noticies relacionades amb el Coronavirus, s’ha utili
 | Resum | Text | Breu resum de la notícia |
 
 ## 4. Representació Gràfica del Dataset
+```python
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
+
+news_df = pd.read_csv('https://raw.githubusercontent.com/xrecaj/uebscrap/master/G7_moe_news.csv')
+
+print(news_df['moe'].value_counts())
+sns.set(font_scale=1.4)
+news_df['moe'].value_counts().plot(kind='barh', figsize=(8, 6), rot=0)
+plt.xlabel("Count of News", labelpad=14)
+plt.ylabel("MOE", labelpad=14)
+plt.title("Count of News by MOE's", y=1.02);
+
+plt.show()
+```
 https://databasic.io/es/wtfcsv/results/5e9033dfb1220fa17977adec?submit=true
 
 ## 5. Contingut del Dataset
