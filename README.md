@@ -55,3 +55,7 @@ Aquest dataset té una llicència d’us CC BY-NC-SA 4.0, la qual permet i per a
 -	Es obligat d’esmentar a l’autor i el link d’aquest tipus de llicència, així com indicar els canvis que s’hagin realitzat, per part de tercers que facin ús d’aquest dataset.
 
 <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>
+
+## 9.DOI
+<a href="https://doi.org/10.5281/zenodo.3747299"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.3747299.svg" alt="DOI"></a>
+
