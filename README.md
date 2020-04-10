@@ -28,7 +28,7 @@ Per realitzar la cerca de noticies relacionades amb el Coronavirus, s’ha utili
 | Resum | Text | Breu resum de la notícia |
 
 ## 4. Representació Gràfica del Dataset
-(pendent)
+https://databasic.io/es/wtfcsv/results/5e9033dfb1220fa17977adec?submit=true
 
 ## 5. Contingut del Dataset
 Aquest dataset conté un recull de notícies econòmiques relacionades amb el Coronavirus (COVID-19) obtingudes de les webs oficials dels Ministeris o Departaments d’Economia dels països i organitzacions que formen el G-7 més Espanya.
