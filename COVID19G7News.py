@@ -1,10 +1,8 @@
 # Llibreries Web Scraping
-from typing import List, Any
 
 import pandas as pd
 import csv
 import re
-import xlsxwriter
 
 from bs4 import BeautifulSoup
 from requests.exceptions import HTTPError
@@ -15,8 +13,11 @@ from urllib.parse import urljoin
 # Init Vars
 url_init = 'https://en.wikipedia.org/wiki/Ministry_of_Finance'
 url_seed = 'https://en.wikipedia.org/'
-g7es_list = ["Canada", "Ministry_of_Public_Action_and_Accounts", "Germany", "Italy", "Japan", "HM_Treasury",
-             "United_States_Department_of_the_Treasury", "Ministry_of_Economy_and_Enterprise"]
+g7es_list = ["Ministry_of_Public_Action_and_Accounts",
+             "Germany",
+             "Italy",
+             "Japan",
+             "Ministry_of_Economy_and_Enterprise"]
 
 
 # Functions Declarations
@@ -86,16 +87,36 @@ for link in g7_moe_links:
         g7_moe_name.append(get_moe_name(page))
         g7_moe_websites.append(get_moe_website(page))
 
+# Excepcions:
+#   Unió Europea,
+#   U.S Department of Commerce,
+#   Canada Department of Finance,
+#   UK Department for Business
+g7_moe_websites.append('https://ec.europa.eu/')
+g7_moe_name.append('European Commission')
+g7_moe_websites.append('https://www.commerce.gov')
+g7_moe_name.append('U.S. Departament of Commerce')
+g7_moe_websites.append('https://www.canada.ca/en/department-finance/')
+g7_moe_name.append('Department of Finance (Canada)')
+g7_moe_websites.append('https://www.gov.uk/business')
+g7_moe_name.append('UK Department for Business, Innovation & Skills')
+
 news_links = []
 news_brief = []
 # desktop user-agent
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
 
 for site, name in zip(g7_moe_websites, g7_moe_name):
-    query = "coronavirus+covid-19"
+    query = "allintext:coronavirus"
     query = query.replace(' ', '+')
-    site_lang=None
-    GOOGLE_SEARCH = f'https://google.com/search?q={query}+site:{site}&lr={site_lang}'
+    last_update_period='m'
+
+    if name != "Ministry of Economy (Spain)":
+        site_lang='lang_en'
+    else:
+        site_lang='lang_es'
+
+    GOOGLE_SEARCH = f'https://google.com/search?q={query}+site:{site}&lr={site_lang}&tbs=qdr:{last_update_period},'
     headers = {"user-agent" : USER_AGENT}
     resp = requests.get(GOOGLE_SEARCH, headers=headers)
     print(f'NAME:{name} GS:{GOOGLE_SEARCH}')
@@ -153,30 +174,7 @@ for d in news_results:
     f_date.append(d[0]['data'])
     f_brief.append(d[0]['resum'])
 
-g={'moe':f_moe,'query':f_query,'title':f_title, 'news_link':f_link, 'published_date': f_date,'brief_summary':f_brief}
+g={'moe':f_moe,'titol':f_title, 'link':f_link, 'data_publicacio': f_date,'resum':f_brief}
 g7_moe_news = pd.DataFrame(g)
-g7_moe_news.to_csv('C:\\Users\\xrecaj\\Google Drive\\UOC\\08 Tipologia i Cicle de Vida de les Dades\\TCVD_PRA01\\G7_moe_news.csv', sep="|", quoting=csv.QUOTE_NONNUMERIC, encoding='utf-8-sig')
+g7_moe_news.to_csv('C:\\Users\\xrecaj\\Google Drive\\UOC\\08 Tipologia i Cicle de Vida de les Dades\\TCVD_PRA01\\G7_moe_news.csv', sep=",", quoting=csv.QUOTE_NONNUMERIC, encoding='utf-8-sig')
 print(g7_moe_news)
-
-
-# Create a workbook and add a worksheet.
-workbook = xlsxwriter.Workbook('C:\\Users\\xrecaj\\Google Drive\\UOC\\08 Tipologia i Cicle de Vida de les Dades\\TCVD_PRA01\\G7_MOE_NEWS.xlsx')
-worksheet = workbook.add_worksheet()
-
-# Start from the first cell. Rows and columns are zero indexed.
-row = 0
-col = 0
-
-# Iterate over the data and write it out row by row.
-for r in g7_moe_news.iterrows():
-    worksheet.write(row, col,     r[row]['moe'])
-    worksheet.write(row, col + 1, r[row]['query'])
-    worksheet.write(row, col + 2, r[row]['title'])
-    worksheet.write(row, col + 3, r[row]['news_link'])
-    worksheet.write(row, col + 4, r[row]['published_date'])
-    worksheet.write(row, col + 5, r[row]['brief_summary'])
-    row += 1
-
-# Write a total using a formula.
-
-workbook.close()
