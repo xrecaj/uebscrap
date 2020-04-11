@@ -1,30 +1,21 @@
-# Llibreries Web Scraping
-
+from typing import Dict, List, Any, Union
+import os
 import pandas as pd
 import csv
 import re
+import lxml.html
+import requests
 
 from bs4 import BeautifulSoup
 from requests.exceptions import HTTPError
-import lxml.html
-import requests
 from urllib.parse import urljoin
 
-# Init Vars
-url_init = 'https://en.wikipedia.org/wiki/Ministry_of_Finance'
-url_seed = 'https://en.wikipedia.org/'
-g7es_list = ["Ministry_of_Public_Action_and_Accounts",
-             "Germany",
-             "Italy",
-             "Japan",
-             "Ministry_of_Economy_and_Enterprise"]
-
-
-# Functions Declarations
-
-def download_page(URL_INPUT):
+#
+# Declaració de Funcions
+#
+def download_page(url_input):
     try:
-        page = requests.get(URL_INPUT)
+        page = requests.get(url_input)
         page.raise_for_status()
     except HTTPError as http_err:
         print(f'HTTP error occurred: {http_err}')  # Python 3.6
@@ -32,15 +23,13 @@ def download_page(URL_INPUT):
     except Exception as err:
         print(f'Other error occurred: {err}')  # Python 3.6
         page = None
-
     return page.text
 
 
-def crawl_initsite(page):
+def get_wiki_page_moe_links(page):
     link_queue = []
     for anchor in page.find_all('a', string=re.compile(r"\w+")):
         link_queue.append(urljoin(url_seed, anchor.get('href')))
-
     return link_queue
 
 
@@ -68,26 +57,42 @@ def get_moe_website(page):
 
 # main()
 
+# INIT VARS
+url_init = 'https://en.wikipedia.org/wiki/Ministry_of_Finance'
+url_seed = 'https://en.wikipedia.org/'
+g7es_list = ["Ministry_of_Public_Action_and_Accounts",
+             "Germany",
+             "Italy",
+             "Japan",
+             "Ministry_of_Economy_and_Enterprise"]
+
+#
 # Wikipedia: de la pàgina inicial proporcionada,
 # llista de Ministeris d'Economia del món, obtenir només la llista de links
+#
 page_init = BeautifulSoup(download_page(url_init), 'html.parser')
-wiki_moe_pages = crawl_initsite(page_init)
+wiki_moe_pages = get_wiki_page_moe_links(page_init)
 
+#
 # Wikipedia: Llista de Links Pagines Wiki de Ministeris d'Economia
 # dels països del G-7 i Espanya
+#
 g7_moe_links = get_wiki_g7_moe_pages(wiki_moe_pages)
 
+#
 # MOE: Llista de Links Pàgina Oficial de Ministeries d'Economia
 # dels països del G-7 i Espanya
+#
 g7_moe_websites = []
 g7_moe_name = []
+
 for link in g7_moe_links:
     page = download_page(link)
     if page is not None:
         g7_moe_name.append(get_moe_name(page))
         g7_moe_websites.append(get_moe_website(page))
 
-# Excepcions:
+# MOE Link Excepcions:
 #   Unió Europea,
 #   U.S Department of Commerce,
 #   Canada Department of Finance,
@@ -101,21 +106,24 @@ g7_moe_name.append('Department of Finance (Canada)')
 g7_moe_websites.append('https://www.gov.uk/business')
 g7_moe_name.append('UK Department for Business, Innovation & Skills')
 
+#
+# GOOGLE: Cerca de Noticies relacionades amb el Coronavirus, COVID-19
+#
 news_links = []
 news_brief = []
-# desktop user-agent
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
 
 for site, name in zip(g7_moe_websites, g7_moe_name):
+    # Preparació de la QUERY
     query = "allintext:coronavirus"
     query = query.replace(' ', '+')
     last_update_period='m'
-
+    # Excepció:
+    # Obtenir documents en Espanyol només si la web és la del Ministerio de Empresa (docs no traduits)
     if name != "Ministry of Economy (Spain)":
         site_lang='lang_en'
     else:
         site_lang='lang_es'
-
     GOOGLE_SEARCH = f'https://google.com/search?q={query}+site:{site}&lr={site_lang}&tbs=qdr:{last_update_period},'
     headers = {"user-agent" : USER_AGENT}
     resp = requests.get(GOOGLE_SEARCH, headers=headers)
@@ -125,6 +133,7 @@ for site, name in zip(g7_moe_websites, g7_moe_name):
     if resp.status_code == 200:
         soup = BeautifulSoup(resp.content, "html.parser")
 
+    # Web Scrap: Obtenir les dades relevants de la pàgina de resultats de Google
     for g in soup.find_all('div', class_='r'):
         anchors = g.find_all('a')
 
@@ -134,7 +143,7 @@ for site, name in zip(g7_moe_websites, g7_moe_name):
             item = {
                 "moe": name,
                 "query" : GOOGLE_SEARCH,
-                "titol": title,
+                "title": title,
                 "link": link
             }
             news_links.append(item)
@@ -149,7 +158,7 @@ for site, name in zip(g7_moe_websites, g7_moe_name):
                 dat=dat[0].string
             item = {
                 "data": dat,
-                'resum': brief
+                'brief': brief
             }
             news_brief.append(item)
 
@@ -160,21 +169,30 @@ for i in range(0,len(news_links)):
     z={**news_links[i],**news_brief[i]}
     news_results[i].append(z)
 
-f_title=[]
-f_link=[]
-f_date=[]
-f_brief=[]
-f_query=[]
-f_moe=[]
+f_title = []
+f_link = []
+f_date = []
+f_brief = []
+f_query = []
+f_moe = []
+
 for d in news_results:
     f_moe.append(d[0]['moe'])
     f_query.append(d[0]['query'])
-    f_title.append(d[0]['titol'])
+    f_title.append(d[0]['title'])
     f_link.append(d[0]['link'])
     f_date.append(d[0]['data'])
-    f_brief.append(d[0]['resum'])
+    f_brief.append(d[0]['brief'])
 
+#
+# Preparació de les dades i creació del dataset en fitxer CSV
+#
 g={'moe':f_moe,'titol':f_title, 'link':f_link, 'data_publicacio': f_date,'resum':f_brief}
 g7_moe_news = pd.DataFrame(g)
-g7_moe_news.to_csv('C:\\Users\\xrecaj\\Google Drive\\UOC\\08 Tipologia i Cicle de Vida de les Dades\\TCVD_PRA01\\G7_moe_news.csv', sep=",", quoting=csv.QUOTE_NONNUMERIC, encoding='utf-8-sig')
+
+current_dir = os.path.dirname(__file__)
+file_name = "G7_moe_news.csv"
+file_path = os.path.join(current_dir, file_name)
+
+g7_moe_news.to_csv(file_path, sep=",", quoting=csv.QUOTE_NONNUMERIC, encoding='utf-8-sig')
 print(g7_moe_news)
