@@ -41,7 +41,16 @@ La utilitat que pretén aquests data set es la d’agilitzar la cerca d’aquest
 
 
 ## 6. Agraïments
-(pendent)
+Per les dades que s’han obtingut del:
+-	Federal Ministry of Finance (Germany). https://www.bundesfinanzministerium.de/
+-	Ministry of Economy and Finance (Italy). http://www.mef.gov.it
+-	Ministry of Finance (Japan). https://www.mof.go.jp
+-	Ministerio de Asuntos Económicos y Transformación (Spain). https://www.mineco.gob.es/
+-	Ministry of Public Action and Accounts (France). https://www.economie.gouv.fr/
+-	European Commission (EU). https://ec.europa.eu
+-	U.S. Departament of Commerce. https://www.commerce.gov
+-	Department of Finance (Canada). https://www.canada.ca/en/department-finance/
+-	UK Department for Business, Innovation & Skills. https://www.gov.uk/business-asset-disposal-relief
 
 ## 7. Inspiració
 En el moment de realitzar aquesta pràctica estava confinat a casa degut a la pandèmia provocada per el coronavirus. 
